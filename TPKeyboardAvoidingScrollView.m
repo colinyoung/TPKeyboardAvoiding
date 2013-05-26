@@ -67,7 +67,6 @@
 
 	float fw = v.frame.origin.x + v.frame.size.width;
 	float fh = v.frame.origin.y + v.frame.size.height;
-	NSLog(@"%@ %f %f", v, v.frame.origin.y, fh);
 	w = MAX(fw, w);
 	h = MAX(fh, h);
 	}
