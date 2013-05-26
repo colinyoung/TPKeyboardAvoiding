@@ -8,6 +8,8 @@
 #import "TPKeyboardAvoidingScrollView.h"
 
 #define _UIKeyboardFrameEndUserInfoKey (&UIKeyboardFrameEndUserInfoKey != NULL ? UIKeyboardFrameEndUserInfoKey : @"UIKeyboardBoundsUserInfoKey")
+#define _UIStatusBarHeight 20.f
+#define _UIScrollViewBouncePadding _UIStatusBarHeight
 
 @interface TPKeyboardAvoidingScrollView () <UITextFieldDelegate, UITextViewDelegate> {
     UIEdgeInsets    _priorInset;
@@ -15,6 +17,7 @@
     BOOL            _keyboardVisible;
     CGRect          _keyboardRect;
     CGSize          _originalContentSize;
+    CGSize          _actualContentSize;
 }
 - (UIView*)findFirstResponderBeneathView:(UIView*)view;
 - (UIEdgeInsets)contentInsetForKeyboard;
@@ -52,30 +55,57 @@
 #endif
 }
 
+- (void)usesActualContentSize {
+  
+	float w = 0, h = 0;
+
+	/* A size that fits the enclosed subviews perfectly. */
+	for (UIView *v in [self subviews]) {
+	/* Each UIScrollView has two random UIImageViews in it - the
+	   scroll bar itself! It needs to be filtered out. */
+	if ([v isKindOfClass:[UIImageView class]] && v.alpha == 0) continue;
+
+	float fw = v.frame.origin.x + v.frame.size.width;
+	float fh = v.frame.origin.y + v.frame.size.height;
+	NSLog(@"%@ %f %f", v, v.frame.origin.y, fh);
+	w = MAX(fw, w);
+	h = MAX(fh, h);
+	}
+
+	h += _UIScrollViewBouncePadding;
+
+	_actualContentSize = CGSizeMake(w, h);
+}
+
 -(void)setFrame:(CGRect)frame {
     [super setFrame:frame];
-    
+
     CGSize contentSize = _originalContentSize;
+    if (CGSizeEqualToSize(_actualContentSize, CGSizeZero)) _actualContentSize = contentSize;
+  
     contentSize.width = MAX(contentSize.width, self.frame.size.width);
-    contentSize.height = MAX(contentSize.height, self.frame.size.height);
-    [super setContentSize:contentSize];
+    contentSize.height = MIN(contentSize.height, _actualContentSize.height);
     
+    [super setContentSize:contentSize];
+  
     if ( _keyboardVisible ) {
         self.contentInset = [self contentInsetForKeyboard];
     }
 }
 
--(void)setContentSize:(CGSize)contentSize {
-    _originalContentSize = contentSize;
-    
-    contentSize.width = MAX(contentSize.width, self.frame.size.width);
-    contentSize.height = MAX(contentSize.height, self.frame.size.height);
-    [super setContentSize:contentSize];
-    
-    if ( _keyboardVisible ) {
-        self.contentInset = [self contentInsetForKeyboard];
-    }
+- (void)setContentSize:(CGSize)contentSize {	
+	_originalContentSize = contentSize;
+	if (CGSizeEqualToSize(_actualContentSize, CGSizeZero)) _actualContentSize = contentSize;
+
+	contentSize.width = MAX(contentSize.width, self.frame.size.width);
+	contentSize.height = MIN(contentSize.height, _actualContentSize.height);
+	[super setContentSize:contentSize];
+
+	if ( _keyboardVisible ) {
+		self.contentInset = [self contentInsetForKeyboard];
+	}
 }
+
 
 #pragma mark - Responders, events
 
