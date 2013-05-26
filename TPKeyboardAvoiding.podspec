@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.license      =  { :type => "MIT" }
 
   s.author       = { "Michael Tyson" => "michael@atastypixel.com" }
-  s.source       = { :git => "https://github.com/colinyoung/TPKeyboardAvoiding.git", :commit => "08de95074f174540b419e0aeab3a5fc765cca77a" }
+  s.source       = { :git => "https://github.com/colinyoung/TPKeyboardAvoiding.git", :tag => "colinyoung" }
 
 
   s.platform     = :ios, '5.0'
